@@ -1,8 +1,9 @@
 // Process button inputs and return button activity
 
-#define NUMBUTTONS 2
+#define NUMBUTTONS 3
 #define MODEBUTTON 4
 #define BRIGHTNESSBUTTON 3
+#define PALETTEBUTTON 2
 
 #define BTNIDLE 0
 #define BTNDEBOUNCING 1
@@ -16,7 +17,7 @@
 
 unsigned long buttonEvents[NUMBUTTONS];
 byte buttonStatuses[NUMBUTTONS];
-byte buttonmap[NUMBUTTONS] = {BRIGHTNESSBUTTON, MODEBUTTON};
+byte buttonmap[NUMBUTTONS] = {BRIGHTNESSBUTTON, MODEBUTTON, PALETTEBUTTON};
 
 void updateButtons() {
   for (byte i = 0; i < NUMBUTTONS; i++) {

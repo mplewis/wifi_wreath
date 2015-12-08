@@ -6,16 +6,14 @@
 
 #define COLOR_ORDER RGB
 #define CHIPSET WS2811
-const int LED_PIN = 5;
+#define BRIGHTNESS_DIAL A0
+const byte LED_PIN = 5;
 
-const int MAXBRIGHTNESS = 72;
-const int STARTBRIGHTNESS = 127;
-// 0-255 will be scaled to 0-MAXBRIGHTNESS
-byte currentBrightness = STARTBRIGHTNESS;
-const int fadeRate = 5;
+const int cycleTime = 60000;
+const byte hueTime = 30;
+const byte fadeRate = 2;
 
-const int cycleTime = 15000;
-const int hueTime = 30;
+byte fadeCount = 0;
 
 void setup() {
   // write FastLED configuration data
@@ -23,13 +21,14 @@ void setup() {
   FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
 
   // set global brightness value
-  FastLED.setBrightness(scale8(STARTBRIGHTNESS, MAXBRIGHTNESS));
+  FastLED.setBrightness(255);
 
   // configure input buttons
   pinMode(MODEBUTTON, INPUT_PULLUP);
   pinMode(BRIGHTNESSBUTTON, INPUT_PULLUP);
-  
-  Serial.begin(115200);
+  pinMode(PALETTEBUTTON, INPUT_PULLUP);
+  pinMode(BRIGHTNESS_DIAL, INPUT);
+  pinMode(ENTROPY_PIN, INPUT);
 }
 
 // list of functions that will be displayed
@@ -58,24 +57,21 @@ void loop() {
       break;
   }
 
-  // Check the brightness adjust button
-  switch (buttonStatus(1)) {
+  // Check the palette switch button
+  switch (buttonStatus(2)) {
     case BTNRELEASED:           // button was pressed and released quickly
-      currentBrightness += 51;  // increase the brightness (wraps to lowest)
-      FastLED.setBrightness(scale8(currentBrightness, MAXBRIGHTNESS));
-      break;
-
-    case BTNLONGPRESS:                      // button was held down for a while
-      currentBrightness = STARTBRIGHTNESS;  // reset brightness to startup value
-      FastLED.setBrightness(scale8(currentBrightness, MAXBRIGHTNESS));
+      selectRandomPalette();
+      fill_solid(leds, NUM_LEDS, CRGB::Black);
       break;
   }
 
   // switch to a new effect every cycleTime milliseconds
   if (currentMillis - cycleMillis > cycleTime && autoCycle == true) {
     cycleMillis = currentMillis;
-    if (++currentEffect >= NUM_EFFECTS) currentEffect = 0;  // loop to start of effect list
-    effectInit = false;  // trigger effect initialization when new effect is selected
+    // loop to start of effect list
+    if (++currentEffect >= NUM_EFFECTS) currentEffect = 0;
+    // trigger effect initialization when new effect is selected
+    effectInit = false;
   }
 
   // increment the global hue value every hueTime milliseconds
@@ -92,20 +88,19 @@ void loop() {
   }
 
   // run a fade effect too if the confetti effect is running
-  if (effectList[currentEffect] == confetti) fadeAll(1);
+  if (effectList[currentEffect] == confetti) fadeCount++;
+  if (fadeCount >= fadeRate) {
+    fadeAll(1);
+    fadeCount = 0;
+  }
+
+  // check the brightness dial
+  if (currentMillis % 10 == 0) {
+    int dial_raw = analogRead(BRIGHTNESS_DIAL);
+    byte dial = map(dial_raw, 0, 1023, 0, 255);
+    byte dimmed = dim8_raw(dial);
+    FastLED.setBrightness(dimmed);
+  }
 
   FastLED.show();  // send the contents of the led memory to the LEDs
-
-  if (currentMillis % 250 == 0) {
-    Serial.print(currentMillis);
-    Serial.print(", ");
-    Serial.print(cycleMillis);
-    Serial.print(", ");
-    Serial.print(hueMillis);
-    Serial.print(", ");
-    Serial.print(effectMillis);
-    Serial.print(", ");
-    Serial.print(effectDelay);
-    Serial.println();
-  }
 }

@@ -1,3 +1,5 @@
+#define ENTROPY_PIN A5
+
 // RGB Plasma
 byte offset = 0;     // counter for radial color wave motion
 int plasVector = 0;  // counter for orbiting plasma center
@@ -13,7 +15,7 @@ void plasma() {
   int yOffset = sin8(plasVector / 256);
 
   // Draw one frame of the animation into the LED array
-  const static int y = 0;
+  static const int y = 0;
   for (int x = 0; x < NUM_LEDS; x++) {
     byte color = sin8(sqrt(sq(((float)x - 7.5) * 10 + xOffset - 127) +
                            sq(((float)y - 2) * 10 + yOffset - 127)) +
@@ -31,7 +33,7 @@ void rider() {
   // startup tasks
   if (effectInit == false) {
     effectInit = true;
-    effectDelay = 5;
+    effectDelay = 30;
     riderPos = 0;
   }
 
@@ -43,7 +45,7 @@ void rider() {
     if (brightness > 255) brightness = 255;
     brightness = 255 - brightness;
     CRGB riderColor = CHSV(cycleHue, 255, brightness);
-    leds[led(x)] = riderColor;
+    leds[x] = riderColor;
   }
 
   riderPos++;  // byte wraps to 0 at 255, triwave8 is also 0-255 periodic
@@ -55,13 +57,15 @@ void confetti() {
   // startup tasks
   if (effectInit == false) {
     effectInit = true;
-    effectDelay = 10;
-    selectRandomPalette();
+    effectDelay = 1;
   }
 
+  if (random16(15) != 0) return;
+  random16_add_entropy(analogRead(ENTROPY_PIN));
+
   // scatter random colored pixels at several random coordinates
-  leds[random16(NUM_LEDS)] = ColorFromPalette(currentPalette, random16(255), 255);
-  random16_add_entropy(1);
+  leds[random16(NUM_LEDS)] =
+    ColorFromPalette(currentPalette, random16(255), 255);
 }
 
 // Draw slanting bars scrolling across the array, uses current hue
@@ -70,12 +74,12 @@ void slantBars() {
   // startup tasks
   if (effectInit == false) {
     effectInit = true;
-    effectDelay = 5;
+    effectDelay = 20;
   }
 
   for (byte x = 0; x < NUM_LEDS; x++) {
-    leds[led(x)] = CHSV(cycleHue, 255, quadwave8(x * 32 + slantPos));
+    leds[led(x)] = CHSV(cycleHue, 255, quadwave8(x * 12 + slantPos));
   }
 
-  slantPos -= 4;
+  slantPos -= 1;
 }

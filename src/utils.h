@@ -28,6 +28,8 @@ void hueCycle(byte incr) {
   cycleHue += incr;
 }
 
+long paletteHue = 0;
+
 // Set every LED in the array to a specified color
 void fillAll(CRGB fillColor) {
   for (byte i = 0; i < NUM_LEDS; i++) {
