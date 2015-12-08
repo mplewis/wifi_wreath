@@ -20,54 +20,52 @@ byte buttonmap[NUMBUTTONS] = {BRIGHTNESSBUTTON, MODEBUTTON};
 
 void updateButtons() {
   for (byte i = 0; i < NUMBUTTONS; i++) {
-    switch(buttonStatuses[i]) {
+    switch (buttonStatuses[i]) {
       case BTNIDLE:
         if (digitalRead(buttonmap[i]) == LOW) {
           buttonEvents[i] = currentMillis;
           buttonStatuses[i] = BTNDEBOUNCING;
         }
-      break;
-      
+        break;
+
       case BTNDEBOUNCING:
         if (currentMillis - buttonEvents[i] > BTNDEBOUNCETIME) {
           if (digitalRead(buttonmap[i]) == LOW) {
             buttonStatuses[i] = BTNPRESSED;
           }
         }
-      break;
-      
+        break;
+
       case BTNPRESSED:
         if (digitalRead(buttonmap[i]) == HIGH) {
           buttonStatuses[i] = BTNRELEASED;
         } else if (currentMillis - buttonEvents[i] > BTNLONGPRESSTIME) {
-            buttonStatuses[i] = BTNLONGPRESS;
+          buttonStatuses[i] = BTNLONGPRESS;
         }
-      break;
-      
+        break;
+
       case BTNRELEASED:
-      break;
-      
+        break;
+
       case BTNLONGPRESS:
-      break;
- 
+        break;
+
       case BTNLONGPRESSREAD:
         if (digitalRead(buttonmap[i]) == HIGH) {
           buttonStatuses[i] = BTNIDLE;
         }
-      break;     
-    }  
+        break;
+    }
   }
 }
 
 byte buttonStatus(byte buttonNum) {
-
   byte tempStatus = buttonStatuses[buttonNum];
   if (tempStatus == BTNRELEASED) {
     buttonStatuses[buttonNum] = BTNIDLE;
   } else if (tempStatus == BTNLONGPRESS) {
     buttonStatuses[buttonNum] = BTNLONGPRESSREAD;
   }
-  
-  return tempStatus;
 
+  return tempStatus;
 }
