@@ -62,8 +62,6 @@ void confetti() {
 
   if (random16(15) != 0) return;
   random16_add_entropy(analogRead(ENTROPY_PIN));
-
-  // scatter random colored pixels at several random coordinates
   leds[random16(NUM_LEDS)] =
     ColorFromPalette(currentPalette, random16(255), 255);
 }
@@ -74,12 +72,21 @@ void slantBars() {
   // startup tasks
   if (effectInit == false) {
     effectInit = true;
-    effectDelay = 20;
+    effectDelay = 10;
   }
 
   for (byte x = 0; x < NUM_LEDS; x++) {
-    leds[led(x)] = CHSV(cycleHue, 255, quadwave8(x * 12 + slantPos));
+    leds[led(x)] = CHSV(cycleHue, 255, quadwave8(x * 4 + slantPos));
   }
 
   slantPos -= 1;
+}
+
+void confettiMidiOn(uint8_t intensity) {
+  random16_add_entropy(analogRead(ENTROPY_PIN));
+  uint8_t count = map(intensity, 0, 127, 1, 6);
+  uint8_t brightness = dim8_raw(map(intensity, 0, 127, 32, 255));
+  for (int i = 0; i < count; i++)
+    leds[random16(NUM_LEDS)] =
+      ColorFromPalette(currentPalette, random16(255), brightness);
 }
