@@ -58,7 +58,7 @@ void confetti() {
     effectDelay = 1;
   }
 
-  if (random16(15) != 0) return;
+  if (random16(30) != 0) return;
   leds[random16(NUM_LEDS)] =
     ColorFromPalette(currentPalette, random16(255), 255);
 }
