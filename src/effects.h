@@ -1,5 +1,3 @@
-#define ENTROPY_PIN A5
-
 // RGB Plasma
 byte offset = 0;     // counter for radial color wave motion
 int plasVector = 0;  // counter for orbiting plasma center
@@ -61,7 +59,6 @@ void confetti() {
   }
 
   if (random16(15) != 0) return;
-  random16_add_entropy(analogRead(ENTROPY_PIN));
   leds[random16(NUM_LEDS)] =
     ColorFromPalette(currentPalette, random16(255), 255);
 }
@@ -80,13 +77,4 @@ void slantBars() {
   }
 
   slantPos -= 1;
-}
-
-void confettiMidiOn(uint8_t intensity) {
-  random16_add_entropy(analogRead(ENTROPY_PIN));
-  uint8_t count = map(intensity, 0, 127, 1, 6);
-  uint8_t brightness = dim8_raw(map(intensity, 0, 127, 32, 255));
-  for (int i = 0; i < count; i++)
-    leds[random16(NUM_LEDS)] =
-      ColorFromPalette(currentPalette, random16(255), brightness);
 }
