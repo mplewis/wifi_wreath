@@ -14,7 +14,11 @@ unsigned long hueMillis;
 byte currentEffect = 0;    // index to the currently running effect
 boolean autoCycle = true;  // flag for automatic effect changes
 
-CRGBPalette16 currentPalette(RainbowColors_p);  // global pallete storage
+CRGBPalette16 palettes[8] = {
+  CloudColors_p, LavaColors_p, OceanColors_p, ForestColors_p, RainbowColors_p,
+  PartyColors_p, HeatColors_p
+};
+CRGBPalette16 currentPalette = RainbowColors_p;  // global palette storage
 
 // definition for list of effect function pointers
 typedef void (*functionList)();
@@ -41,39 +45,6 @@ void fillAll(CRGB fillColor) {
 void fadeAll(byte fadeIncr) {
   for (byte i = 0; i < NUM_LEDS; i++) {
     leds[i] = leds[i].fadeToBlackBy(fadeIncr);
-  }
-}
-
-// Pick a random palette from a list
-void selectRandomPalette() {
-  switch (random8(8)) {
-    case 0:
-      currentPalette = CloudColors_p;
-      break;
-
-    case 1:
-      currentPalette = LavaColors_p;
-      break;
-
-    case 2:
-      currentPalette = OceanColors_p;
-      break;
-
-    case 4:
-      currentPalette = ForestColors_p;
-      break;
-
-    case 5:
-      currentPalette = RainbowColors_p;
-      break;
-
-    case 6:
-      currentPalette = PartyColors_p;
-      break;
-
-    case 7:
-      currentPalette = HeatColors_p;
-      break;
   }
 }
 

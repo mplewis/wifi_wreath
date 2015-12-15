@@ -1,4 +1,8 @@
 #include <FastLED.h>
+/*
+#include <string.h>
+#include <stdio.h>
+*/
 #include "leds.h"
 #include "utils.h"
 #include "effects.h"
@@ -10,6 +14,7 @@ const char LED_PIN = 7;
 const char BRIGHTNESS = 127;
 
 const char BUF_SIZE = 64;
+const char ARG_COUNT = 16;
 const char hueTime = 30; 
 
 // fade-out rate. higher = longer, slower fades
@@ -17,18 +22,18 @@ const char fadeRate = 2;
 
 char fadeCount = 0;
 char rcvd[BUF_SIZE] = {0};
-char rcvd_pos = 0;
+unsigned char args[ARG_COUNT] = {0};
+unsigned char rcvd_pos = 0;
 
 // list of functions that will be displayed
-#define NUM_EFFECTS 4
-functionList effectList[] = {plasma, confetti, rider, slantBars};
+functionList effectList[] = {static_color, plasma, confetti, rider, slantBars};
 
 void setup() {
   FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS)
     .setCorrection(TypicalPixelString);
   FastLED.setBrightness(BRIGHTNESS);
 
-  switch_to_effect(1);
+  switch_to_effect(0);
 
   Serial.begin(115200);
 }
@@ -50,6 +55,12 @@ void serialEvent() {
   while (Serial.available()) {
     char c = Serial.read();
     if (c == '\r'|| c == '\n') {
+      for (unsigned char i = rcvd_pos; i < BUF_SIZE; i++) {
+        rcvd[i] = 0;
+      }
+      for (unsigned char i = 0; i < ARG_COUNT; i++) {
+        args[i] = 0;
+      }
       process_cmd(rcvd_pos);
       rcvd_pos = 0;
     } else {
@@ -61,14 +72,51 @@ void serialEvent() {
 
 // process a finished serial command
 void process_cmd(char length) {
-  Serial.print("Received: ");
-  for (char i = 0; i < length; i++) {
-    Serial.print(rcvd[i]);
+  char *as_chars = strtok(rcvd, ",");
+  int arg_num = 0;
+  while (as_chars != 0) {
+    args[arg_num++] = atoi(as_chars);
+    as_chars = strtok(0, ",");
   }
-  Serial.println();
+
+  if (args[0] == 1) {
+    // switch effect
+    switch_to_effect(args[1]);
+    Serial.print("Set effect: ");
+    Serial.println(args[1], DEC);
+
+  } else if (args[0] == 2) {
+    // switch palette
+    currentPalette = palettes[(unsigned char)args[1]];
+    Serial.print("Set palette: ");
+    Serial.println(args[1], DEC);
+
+  } else if (args[0] == 3) {
+    // set brightness
+    FastLED.setBrightness(args[1]);
+    Serial.print("Set brightness: ");
+    Serial.println(args[1], DEC);
+
+  } else if (args[0] == 4) {
+    // set static color
+    switch_to_effect(0);
+    curr_static_color.r = args[1];
+    curr_static_color.g = args[2];
+    curr_static_color.b = args[3];
+    Serial.print("Set static color: ");
+    Serial.print(curr_static_color.r, DEC);
+    Serial.print(", ");
+    Serial.print(curr_static_color.g, DEC);
+    Serial.print(", ");
+    Serial.println(curr_static_color.b, DEC);
+
+  } else {
+    Serial.print("Unrecognized action: ");
+    Serial.println(args[0], DEC);
+  }
 }
 
-// switch to a new effect every cycleTime milliseconds
+// switch to a new effect
 void switch_to_effect(char effect_num) {
   currentEffect = effect_num;
   effectInit = false;

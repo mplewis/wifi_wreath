@@ -78,3 +78,12 @@ void slantBars() {
 
   slantPos -= 1;
 }
+
+CRGB curr_static_color = CRGB::White;
+void static_color() {
+  if (effectInit == false) {
+    effectInit = false;
+    effectDelay = 10;
+  }
+  fillAll(curr_static_color);
+}
