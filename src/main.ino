@@ -1,8 +1,5 @@
 #include <FastLED.h>
-/*
-#include <string.h>
-#include <stdio.h>
-*/
+#include <mqtt.h>
 #include "leds.h"
 #include "utils.h"
 #include "effects.h"
@@ -20,6 +17,10 @@ const char hueTime = 30;
 // fade-out rate. higher = longer, slower fades
 const char fadeRate = 2;
 
+ESP esp(&Serial, 4);
+MQTT mqtt(&esp);
+bool wifi_connected = false;
+
 char fadeCount = 0;
 char rcvd[BUF_SIZE] = {0};
 unsigned char args[ARG_COUNT] = {0};
@@ -34,6 +35,10 @@ void setup() {
   FastLED.setBrightness(BRIGHTNESS);
 
   switch_to_effect(0);
+
+  mqtt.dataCb.attach(&mqtt_data);
+  mqtt.subscribe("wreath");
+  esp.wifiCb.attach(&wifi_callback);
 
   Serial.begin(115200);
 }
@@ -50,24 +55,31 @@ void loop() {
   random16_add_entropy(analogRead(ENTROPY_PIN));
 }
 
-// handle incoming serial data
-void serialEvent() {
-  while (Serial.available()) {
-    char c = Serial.read();
-    if (c == '\r'|| c == '\n') {
-      for (unsigned char i = rcvd_pos; i < BUF_SIZE; i++) {
-        rcvd[i] = 0;
-      }
-      for (unsigned char i = 0; i < ARG_COUNT; i++) {
-        args[i] = 0;
-      }
-      process_cmd(rcvd_pos);
-      rcvd_pos = 0;
+void wifi_callback(void *response) {
+  RESPONSE res(response);
+  if (res.getArgc() == 1) {
+    uint32_t status;
+    res.popArgs((uint8_t *)&status, 4);
+    if (status == STATION_GOT_IP) {
+      Serial.println("Wifi connected");
+      wifi_connected = true;
     } else {
-      rcvd[rcvd_pos] = c;
-      rcvd_pos = (rcvd_pos + 1) % BUF_SIZE;
+      Serial.println("Wifi disconnected");
+      wifi_connected = false;
     }
   }
+}
+
+void mqtt_data(void *response) {
+  RESPONSE res(response);
+
+  Serial.print("Topic: ");
+  String topic = res.popString();
+  Serial.println(topic);
+
+  Serial.print("Data: ");
+  String data = res.popString();
+  Serial.println(data);
 }
 
 // process a finished serial command
