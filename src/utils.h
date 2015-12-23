@@ -14,6 +14,7 @@ unsigned long hueMillis;
 byte currentEffect = 0;    // index to the currently running effect
 boolean autoCycle = true;  // flag for automatic effect changes
 
+const char PALETTE_COUNT = 7;
 CRGBPalette16 palettes[8] = {
   CloudColors_p, LavaColors_p, OceanColors_p, ForestColors_p, RainbowColors_p,
   PartyColors_p, HeatColors_p
