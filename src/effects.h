@@ -94,3 +94,11 @@ void static_color() {
   }
   fillAll(curr_static_color);
 }
+
+void rainbow_loop() {
+  for (byte x = 0; x < NUM_LEDS; x++) {
+    byte offset = map(x, 0, NUM_LEDS + 1, 0, 255);
+    byte hue = cycleHue + offset;
+    leds[x] = CHSV(hue, 255, 255);
+  }
+}

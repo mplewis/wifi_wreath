@@ -6,7 +6,7 @@
 #define COLOR_ORDER RGB
 #define CHIPSET WS2811
 const char ENTROPY_PIN = A5;
-const char LED_PIN = 7;
+const char LED_PIN = 2;
 const char BRIGHTNESS = 255;
 
 const char ARG_COUNT = 16;
@@ -20,24 +20,19 @@ unsigned char args[ARG_COUNT] = {0};
 unsigned char rcvd_pos = 0;
 
 // list of functions that will be displayed
-const char EFFECT_COUNT = 4;
-functionList effectList[] = {plasma, confetti, rider, slantBars};
+const char EFFECT_COUNT = 1;
+functionList effectList[] = {rainbow_loop};
 
 void setup() {
   FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS)
     .setCorrection(TypicalPixelString);
   FastLED.setBrightness(BRIGHTNESS);
 
-  switch_to_effect(1);
+  switch_to_effect(0);
   next_effect_at = millis() + EFFECT_TIME;
 }
 
 void loop() {
-  if (millis() > next_effect_at) {
-    switch_to_effect(currentEffect + 1);
-    next_effect_at = millis() + EFFECT_TIME;
-  }
-
   increment_hue();
   run_current_effect();
   FastLED.show();
