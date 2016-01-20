@@ -4,6 +4,8 @@
 ESP esp(&Serial, &Serial, -1);
 MQTT mqtt(&esp);
 
+void process_cmd(String cmd);
+
 void wifiCb(void* response) {
   RESPONSE res(response);
   if (res.getArgc() == 1) {
@@ -29,6 +31,7 @@ void mqttData(void* response) {
   res.popString();  // topic
   String data = res.popString();
   Serial.println(data);
+  process_cmd(data);
 }
 
 void mqtt_setup() {

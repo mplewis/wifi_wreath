@@ -12,15 +12,14 @@ const char BRIGHTNESS = 127;
 
 const char BUF_SIZE = 64;
 const char ARG_COUNT = 16;
-const char hueTime = 30; 
+const char hueTime = 30;
 
-// fade-out rate. higher = longer, slower fades
-const char fadeRate = 2;
+const char refresh_period = 10;
 
-char fadeCount = 0;
-char rcvd[BUF_SIZE] = {0};
+char cmd_chars[BUF_SIZE] = {0};
 unsigned char args[ARG_COUNT] = {0};
 unsigned char rcvd_pos = 0;
+unsigned long next_refresh = 0;
 
 // list of functions that will be displayed
 functionList effectList[] = {static_color, plasma, confetti, rider, slantBars};
@@ -39,22 +38,24 @@ void loop() {
   currentMillis = millis();
 
   increment_hue();
-  increment_fade();
   run_current_effect();
-
-  FastLED.show();
+  if (currentMillis > next_refresh) {
+    next_refresh = currentMillis + refresh_period;
+    FastLED.show();
+  }
 
   random16_add_entropy(analogRead(ENTROPY_PIN));
   mqtt_process();
 }
 
 // process a finished serial command
-void process_cmd(char length) {
-  char *as_chars = strtok(rcvd, ",");
+void process_cmd(String cmd) {
+  cmd.toCharArray(cmd_chars, BUF_SIZE);
+  char *token = strtok(cmd_chars, ",");
   int arg_num = 0;
-  while (as_chars != 0) {
-    args[arg_num++] = atoi(as_chars);
-    as_chars = strtok(0, ",");
+  while (token != 0) {
+    args[arg_num++] = atoi(token);
+    token = strtok(0, ",");
   }
 
   if (args[0] == 1) {
@@ -113,16 +114,5 @@ void run_current_effect() {
   if (currentMillis - effectMillis > effectDelay) {
     effectMillis = currentMillis;
     effectList[currentEffect]();  // run the selected effect function
-  }
-}
-
-// run a fade effect too if the confetti effect is running
-void increment_fade() {
-  if (effectList[currentEffect] == confetti) {
-    fadeCount++;
-    if (fadeCount >= fadeRate) {
-      fadeAll(1);
-      fadeCount = 0;
-    }
   }
 }

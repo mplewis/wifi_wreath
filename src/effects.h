@@ -51,6 +51,8 @@ void rider() {
 
 // Pixels with random locations and random colors selected from a palette
 // Use with the fadeAll function to allow old pixels to decay
+const char fadePeriod = 5;
+char fadeCount = 0;
 void confetti() {
   // startup tasks
   if (effectInit == false) {
@@ -58,6 +60,10 @@ void confetti() {
     effectDelay = 1;
   }
 
+  fadeCount = (fadeCount + 1) % fadePeriod;
+  if (fadeCount == 0) {
+    fadeAll(1);
+  }
   if (random16(30) != 0) return;
   leds[random16(NUM_LEDS)] =
     ColorFromPalette(currentPalette, random16(255), 255);
