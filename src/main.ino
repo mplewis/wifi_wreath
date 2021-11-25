@@ -6,11 +6,11 @@
 #define COLOR_ORDER RGB
 #define CHIPSET WS2811
 const char ENTROPY_PIN = A5;
-const char LED_PIN = 2;
+const char LED_PIN = 5;
 const char BRIGHTNESS = 255;
 
 const char ARG_COUNT = 16;
-const char hueTime = 30;
+const char HUE_TIME = 30;
 const unsigned long EFFECT_TIME = 60000;
 
 const char refresh_period = 10;
@@ -21,7 +21,7 @@ unsigned char rcvd_pos = 0;
 
 // list of functions that will be displayed
 const char EFFECT_COUNT = 1;
-functionList effectList[] = {rainbow_loop};
+functionList effectList[] = {confetti};
 
 void setup() {
   FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS)
@@ -46,9 +46,9 @@ void switch_to_effect(char effect_num) {
   effectInit = false;
 }
 
-// increment the global hue value every hueTime milliseconds
+// increment the global hue value every HUE_TIME milliseconds
 void increment_hue() {
-  if (millis() - hueMillis > hueTime) {
+  if (millis() - hueMillis > HUE_TIME) {
     hueMillis = millis();
     hueCycle(1);  // increment the global hue value
   }

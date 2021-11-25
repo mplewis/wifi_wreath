@@ -58,14 +58,15 @@ void confetti() {
   if (effectInit == false) {
     effectInit = true;
     effectDelay = 1;
-    currentPalette = palettes[random8(7)];
+    // currentPalette = palettes[random8(7)];
+    currentPalette = CloudColors_p;
   }
 
   fadeCount = (fadeCount + 1) % fadePeriod;
   if (fadeCount == 0) {
     fadeAll(1);
   }
-  if (random16(8) != 0) return;
+  if (random16(8) > 0) return;
   leds[random16(NUM_LEDS)] =
     ColorFromPalette(currentPalette, random16(255), 255);
 }
